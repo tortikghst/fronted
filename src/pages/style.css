@@ -1,0 +1,277 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+
+/* РЕГИСТРАЦИЯ / ВХОД */
+
+/* Контейнер всей страницы регистрации */
+.registr {
+  background: url(./image/vyatka_gost.jpg);
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  padding: 180px 20px 50px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Белая карточка - ограниченная шапка */
+.registr .register {
+  background: white;
+  border-radius: 30px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  padding: 40px 50px;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Заголовок формы */
+.registr .register h2 {
+  font-size: 32px;
+  color: #333;
+  margin-bottom: 30px;
+  margin-top: 0;
+  font-weight: 600;
+}
+
+/* Поля ввода */
+.registr .register input {
+  width: 100%;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 15px;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.registr .register input:focus {
+  border-color: #dc3545; /* Красный вместо синего */
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
+}
+
+/* Кнопка Войти / Зарегистрироваться */
+.registr .register button[type="submit"] {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); /* Красный градиент */
+  color: white;
+  border: none;
+  border-radius: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 25px;
+  font-family: inherit;
+}
+
+.registr .register button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(220, 53, 69, 0.3);
+}
+
+/* Контейнер для двух кнопок (рядом друг с другом) */
+.registr .register div:last-of-type {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 5px;
+}
+
+/* Стили для кнопок "Зарегистрироваться" и "На главную" */
+.registr .register div:last-of-type button {
+  flex: 1;
+  padding: 12px 20px;
+  background: #f0f0f0;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #333;
+  font-family: inherit;
+}
+
+.registr .register div:last-of-type button:first-child {
+  background: #ffe8ea; /* Светло-красный фон */
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.registr .register div:last-of-type button:first-child:hover {
+  background: #dc3545;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.registr .register div:last-of-type button:last-child {
+  background: #f5f5f5;
+  border-color: #ddd;
+}
+
+.registr .register div:last-of-type button:last-child:hover {
+  background: #e0e0e0;
+  transform: translateY(-2px);
+}
+
+/* Индикатор загрузки */
+#loading {
+  text-align: center;
+  margin-top: 20px;
+  padding: 10px;
+  background: rgba(220, 53, 69, 0.1);
+  border-radius: 12px;
+  color: #dc3545;}
+
+/* ===== HEADER / НАВИГАЦИЯ ===== */
+.nav-buttons {
+  font-size: 70px;
+  padding-left: 70%;
+}
+
+.header-nav {
+  padding: 30px 0px;
+  background-color: rgb(58, 107, 151);
+  border-radius: 20px;
+  margin-inline: auto;
+}
+
+.div-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  background-color: #a3a1a1;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.header-btn {
+  width: 200px;
+  height: 80px;
+  font-size: 30px;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  border-radius: 20px;
+  text-align: center;
+  outline: 0;
+  border: none;
+  background-color: #d9d9d9;
+}
+
+.header-btnt {
+  width: 200px;
+  height: 80px;
+  font-size: 30px;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  border-radius: 20px;
+  text-align: center;
+  outline: 0;
+  border: none;
+  background-color: #ec5748;
+}
+
+/* ===== ГЛАВНЫЙ ЗАГОЛОВОК ===== */
+.main_h {
+  font-size: 100px;
+  text-align: center;
+  margin-bottom: 0;
+  line-height: 1.1;
+  padding-top: 40px;
+}
+
+/* ===== ОПИСАНИЕ ПОД ЗАГОЛОВКОМ ===== */
+.main_hj {
+  font-size: 40px;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+
+/* ===== ОБЩИЕ СТИЛИ ===== */
+.page {
+  background-image: url("./image/ehf.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+
+.main {
+  color: rgb(0, 0, 0);
+  text-align: center;
+  font-size: 70px;
+}
+
+a {
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+}
+
+/* ===== ОСТАЛЬНЫЕ ЭЛЕМЕНТЫ ===== */
+.search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  position: relative;
+  overflow: hidden;
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.acc {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  z-index: 1000;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.h_reg {
+  background: #a3a1a1;
+  background-size: cover;
+  border-radius: 30px;
+  width: 100%;
+  padding: 10px;
+  margin-top: -180px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.btn-reg {
+  color: #000000;
+  font-size: 25px;
+  border-radius: 30px;
+}
