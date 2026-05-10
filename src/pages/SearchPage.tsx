@@ -1,162 +1,185 @@
-import { useState, useEffect } from 'react';
+// src/pages/SearchPage.tsx
+import { useState, useEffect, useCallback, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { equipmentApi, categoriesApi } from '../api/equipmentApi';
+import EquipmentCard from '../components/EquipmentCard';
+import type { Equipment, Category, EquipmentFilters } from '../api/types';
 import './SearchPage.css';
-
-interface Category {
-    id: string;
-    name: string;
-}
-
-const CITIES = [
-    'Москва',
-    'Санкт-Петербург',
-    'Киров',
-    'Казань',
-    'Нижний Новгород',
-    'Екатеринбург',
-    'Новосибирск',
-    'Краснодар',
-    'Владивосток',
-    'Ростов-на-Дону',
-];
 
 export default function SearchPage() {
     const navigate = useNavigate();
 
-    const [searchTerm, setSearchTerm] = useState('');
-    const [city, setCity] = useState('');
-    const [categoryId, setCategoryId] = useState('');
-    const [minPrice, setMinPrice] = useState('');
-    const [maxPrice, setMaxPrice] = useState('');
-    const [deliveryOnly, setDeliveryOnly] = useState(false);
+    const [items, setItems] = useState<Equipment[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [loadingCategories, setLoadingCategories] = useState(true);
-    const [validationError, setValidationError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [searched, setSearched] = useState(false);
 
-    // Загружаем доступные категории с бэкенда
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await fetch('http://91.107.123.64:3000/categories');
-                if (!response.ok) throw new Error('Ошибка загрузки категорий');
-                const data = await response.json();
-                setCategories(data);
-            } catch (err) {
-                console.error(err);
-                setCategories([]);
-            } finally {
-                setLoadingCategories(false);
-            }
-        };
-        fetchCategories();
+    const [filters, setFilters] = useState<EquipmentFilters>({
+        city: '',
+        minPrice: undefined,
+        maxPrice: undefined,
+        search: '',
+        delivery: undefined,
+        categoryId: '',
+    });
+
+    const handleSearch = useCallback(async (e?: FormEvent) => {
+        e?.preventDefault();
+        setLoading(true);
+        setSearched(true);
+
+        try {
+            const cleanFilters: EquipmentFilters = {};
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== '' && value !== undefined && value !== null) {
+                    (cleanFilters as Record<string, unknown>)[key] = value;
+                }
+            });
+
+            const data = await equipmentApi.getAll(cleanFilters);
+            setItems(data);
+        } catch (err) {
+            console.error('Ошибка поиска:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [filters]);
+
+    const updateFilter = useCallback((key: keyof EquipmentFilters, value: unknown) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
     }, []);
 
-    const validateForm = (): boolean => {
-        if (!city) {
-            setValidationError('Пожалуйста, выберите город');
-            return false;
-        }
-        if (!categoryId) {
-            setValidationError('Пожалуйста, выберите категорию');
-            return false;
-        }
-        setValidationError(null);
-        return true;
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validateForm()) return;
-
-        // Собираем параметры в URLSearchParams
-        const params = new URLSearchParams();
-        if (searchTerm.trim()) params.set('search', searchTerm.trim());
-        if (city) params.set('city', city);
-        if (categoryId) params.set('categoryId', categoryId);
-        if (minPrice !== '') params.set('minPrice', minPrice);
-        if (maxPrice !== '') params.set('maxPrice', maxPrice);
-        if (deliveryOnly) params.set('delivery', 'true');
-
-        navigate(`/results?${params.toString()}`);
-    };
+    useEffect(() => {
+        categoriesApi.getAll().then(setCategories).catch(console.error);
+        handleSearch();
+    }, [handleSearch]);
 
     return (
         <div className="search-page">
-            <h1>Найти оборудование</h1>
-            <form className="search-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label htmlFor="searchTerm">Поиск по названию или описанию</label>
-                    <input
-                        id="searchTerm"
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Например: Микрофон"
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="city">Город <span className="required">*</span></label>
-                    <select id="city" value={city} onChange={(e) => setCity(e.target.value)}>
-                        <option value="" disabled>Выберите город</option>
-                        {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="category">Категория <span className="required">*</span></label>
-                    <select
-                        id="category"
-                        value={categoryId}
-                        onChange={(e) => setCategoryId(e.target.value)}
-                        disabled={loadingCategories}
+            <header className="search-header">
+                <div className="search-header-left">
+                    <button
+                        className="search-back-btn"
+                        onClick={() => navigate(-1)}
                     >
-                        <option value="" disabled>
-                            {loadingCategories ? 'Загрузка...' : 'Выберите категорию'}
-                        </option>
-                        {categories.map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
-                    </select>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
+                        Назад
+                    </button>
+                    <h1 className="search-logo">GostEvent</h1>
                 </div>
+                <button
+                    className="search-profile-btn"
+                    onClick={() => navigate('/profile')}
+                    title="Профиль"
+                >
+                    <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </button>
+            </header>
 
-                <div className="form-group">
-                    <label htmlFor="minPrice">Минимальная цена (₽)</label>
-                    <input
-                        id="minPrice"
-                        type="number"
-                        value={minPrice}
-                        onChange={(e) => setMinPrice(e.target.value)}
-                        placeholder="0"
-                    />
-                </div>
+            <section className="search-filters">
+                <form className="search-filters-form" onSubmit={handleSearch}>
+                    <div className="search-filter-group">
+                        <label>Поиск</label>
+                        <input
+                            type="text"
+                            placeholder="Название оборудования..."
+                            value={filters.search || ''}
+                            onChange={e => updateFilter('search', e.target.value)}
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="maxPrice">Максимальная цена (₽)</label>
-                    <input
-                        id="maxPrice"
-                        type="number"
-                        value={maxPrice}
-                        onChange={(e) => setMaxPrice(e.target.value)}
-                        placeholder="100 000 000"
-                    />
-                </div>
+                    <div className="search-filter-group">
+                        <label>Город</label>
+                        <input
+                            type="text"
+                            placeholder="Москва"
+                            value={filters.city || ''}
+                            onChange={e => updateFilter('city', e.target.value)}
+                        />
+                    </div>
 
-                <div className="checkbox-group">
-                    <label>
+                    <div className="search-filter-group">
+                        <label>Категория</label>
+                        <select
+                            value={filters.categoryId || ''}
+                            onChange={e => updateFilter('categoryId', e.target.value)}
+                        >
+                            <option value="">Все категории</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="search-filter-group">
+                        <label>Цена от</label>
+                        <input
+                            type="number"
+                            placeholder="0"
+                            value={filters.minPrice || ''}
+                            onChange={e => updateFilter('minPrice', e.target.value ? Number(e.target.value) : undefined)}
+                        />
+                    </div>
+
+                    <div className="search-filter-group">
+                        <label>Цена до</label>
+                        <input
+                            type="number"
+                            placeholder="∞"
+                            value={filters.maxPrice || ''}
+                            onChange={e => updateFilter('maxPrice', e.target.value ? Number(e.target.value) : undefined)}
+                        />
+                    </div>
+
+                    <label className="search-filter-checkbox">
                         <input
                             type="checkbox"
-                            checked={deliveryOnly}
-                            onChange={(e) => setDeliveryOnly(e.target.checked)}
+                            checked={!!filters.delivery}
+                            onChange={e => updateFilter('delivery', e.target.checked || undefined)}
                         />
-                        Только с доставкой
+                        С доставкой
                     </label>
-                </div>
 
-                <button type="submit" className="submit-button">Искать</button>
-            </form>
+                    <button type="submit" className="search-filter-btn">
+                        🔍 Найти
+                    </button>
+                </form>
+            </section>
 
-            {validationError && <div className="error-message">{validationError}</div>}
+            <section className="search-results">
+                {loading ? (
+                    <div className="main-loading">
+                        <div className="spinner"></div>
+                        <p>Поиск...</p>
+                    </div>
+                ) : (
+                    <>
+                        {searched && (
+                            <p className="search-count">
+                                Найдено: <span>{items.length}</span> {items.length === 1 ? 'товар' : items.length < 5 ? 'товара' : 'товаров'}
+                            </p>
+                        )}
+
+                        {items.length > 0 ? (
+                            <div className="search-grid">
+                                {items.map(item => (
+                                    <EquipmentCard key={item.id} equipment={item} />
+                                ))}
+                            </div>
+                        ) : searched ? (
+                            <div className="search-empty">
+                                <h3>Ничего не найдено</h3>
+                                <p>Попробуйте изменить параметры поиска</p>
+                            </div>
+                        ) : null}
+                    </>
+                )}
+            </section>
         </div>
     );
 }

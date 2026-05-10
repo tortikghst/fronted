@@ -1,119 +1,185 @@
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import './ResultPage.css';
+// src/pages/SearchPage.tsx
+import { useState, useEffect, useCallback, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { equipmentApi, categoriesApi } from '../api/equipmentApi';
+import EquipmentCard from '../components/EquipmentCard';
+import type { Equipment, Category, EquipmentFilters } from '../api/types';
+import './SearchPage.css';
 
-interface Equipment {
-    id: string;
-    name: string;
-    description: string | null;
-    price: number;
-    city: string;
-    images: string;
-    deliveryAvailable: boolean;
-    categoryId: string | null;
-}
-
-export default function ResultsPage() {
-    const location = useLocation();
+export default function SearchPage() {
     const navigate = useNavigate();
-    const searchParams = new URLSearchParams(location.search);
 
-    // Читаем параметры из URL
-    const search = searchParams.get('search') || '';
-    const city = searchParams.get('city') || '';
-    const categoryId = searchParams.get('categoryId') || '';
-    const minPrice = searchParams.get('minPrice') || '';
-    const maxPrice = searchParams.get('maxPrice') || '';
-    const delivery = searchParams.get('delivery') === 'true';
+    const [items, setItems] = useState<Equipment[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [searched, setSearched] = useState(false);
 
-    const [equipment, setEquipment] = useState<Equipment[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [filters, setFilters] = useState<EquipmentFilters>({
+        city: '',
+        minPrice: undefined,
+        maxPrice: undefined,
+        search: '',
+        delivery: undefined,
+        categoryId: '',
+    });
+
+    const handleSearch = useCallback(async (e?: FormEvent) => {
+        e?.preventDefault();
+        setLoading(true);
+        setSearched(true);
+
+        try {
+            const cleanFilters: EquipmentFilters = {};
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== '' && value !== undefined && value !== null) {
+                    (cleanFilters as Record<string, unknown>)[key] = value;
+                }
+            });
+
+            const data = await equipmentApi.getAll(cleanFilters);
+            setItems(data);
+        } catch (err) {
+            console.error('Ошибка поиска:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [filters]);
+
+    const updateFilter = useCallback((key: keyof EquipmentFilters, value: unknown) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+    }, []);
 
     useEffect(() => {
-        const fetchFilteredEquipment = async () => {
-            setLoading(true);
-            setError(null);
-
-            // Строим URL с теми же параметрами, что и в Swagger
-            const params = new URLSearchParams();
-            if (search) params.set('search', search);
-            if (city) params.set('city', city);
-            if (categoryId) params.set('categoryId', categoryId);
-            if (minPrice) params.set('minPrice', minPrice);
-            if (maxPrice) params.set('maxPrice', maxPrice);
-            if (delivery) params.set('delivery', 'true');
-
-            const url = `http://91.107.123.64:3000/equipment?${params.toString()}`;
-            console.log('📡 Запрос к API:', url);
-
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        throw new Error('Требуется авторизация. Пожалуйста, войдите в систему.');
-                    }
-                    if (response.status === 500) {
-                        throw new Error('Ошибка на сервере. Попробуйте позже.');
-                    }
-                    throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
-                }
-                const data = await response.json();
-                console.log('✅ Получено:', data.length, 'записей');
-                setEquipment(data);
-            } catch (err) {
-                console.error('❌ Ошибка:', err);
-                setError(err instanceof Error ? err.message : 'Не удалось загрузить данные');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchFilteredEquipment();
-    }, [search, city, categoryId, minPrice, maxPrice, delivery]);
-
-    if (loading) return <div className="results-page loading">⏳ Поиск оборудования...</div>;
-    if (error) return <div className="results-page error">❌ {error}</div>;
+        categoriesApi.getAll().then(setCategories).catch(console.error);
+        handleSearch();
+    }, [handleSearch]);
 
     return (
-        <div className="results-page">
-            <h1>Результаты поиска</h1>
-            {equipment.length === 0 ? (
-                <div className="no-results">
-                    😕 Ничего не найдено. Попробуйте изменить параметры поиска.
+        <div className="search-page">
+            <header className="search-header">
+                <div className="search-header-left">
+                    <button
+                        className="search-back-btn"
+                        onClick={() => navigate(-1)}
+                    >
+                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
+                        Назад
+                    </button>
+                    <h1 className="search-logo">GostEvent</h1>
                 </div>
-            ) : (
-                <>
-                    <p className="found-count">Найдено: {equipment.length}</p>
-                    <div className="products-grid">
-                        {equipment.map(item => (
-                            <div key={item.id} className="product-card">
-                                <div className="product-image">
-                                    {item.images ? (
-                                        <img src={item.images} alt={item.name} />
-                                    ) : (
-                                        <div className="no-image">Нет фото</div>
-                                    )}
-                                </div>
-                                <div className="product-info">
-                                    <h3>{item.name}</h3>
-                                    {item.description && <p>{item.description.slice(0, 100)}...</p>}
-                                    <div className="product-price">{item.price.toLocaleString()} ₽</div>
-                                    <div className="product-city">🏙️ {item.city}</div>
-                                    <div className="product-delivery">
-                                        {item.deliveryAvailable ? '🚚 Доставка доступна' : '🏠 Самовывоз'}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </>
-            )}
-            <div className="back-button-wrapper">
-                <button onClick={() => navigate('/')} className="back-button">
-                    ← Вернуться к поиску
+                <button
+                    className="search-profile-btn"
+                    onClick={() => navigate('/profile')}
+                    title="Профиль"
+                >
+                    <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
                 </button>
-            </div>
+            </header>
+
+            <section className="search-filters">
+                <form className="search-filters-form" onSubmit={handleSearch}>
+                    <div className="search-filter-group">
+                        <label>Поиск</label>
+                        <input
+                            type="text"
+                            placeholder="Название оборудования..."
+                            value={filters.search || ''}
+                            onChange={e => updateFilter('search', e.target.value)}
+                        />
+                    </div>
+
+                    <div className="search-filter-group">
+                        <label>Город</label>
+                        <input
+                            type="text"
+                            placeholder="Москва"
+                            value={filters.city || ''}
+                            onChange={e => updateFilter('city', e.target.value)}
+                        />
+                    </div>
+
+                    <div className="search-filter-group">
+                        <label>Категория</label>
+                        <select
+                            value={filters.categoryId || ''}
+                            onChange={e => updateFilter('categoryId', e.target.value)}
+                        >
+                            <option value="">Все категории</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="search-filter-group">
+                        <label>Цена от</label>
+                        <input
+                            type="number"
+                            placeholder="0"
+                            value={filters.minPrice || ''}
+                            onChange={e => updateFilter('minPrice', e.target.value ? Number(e.target.value) : undefined)}
+                        />
+                    </div>
+
+                    <div className="search-filter-group">
+                        <label>Цена до</label>
+                        <input
+                            type="number"
+                            placeholder="∞"
+                            value={filters.maxPrice || ''}
+                            onChange={e => updateFilter('maxPrice', e.target.value ? Number(e.target.value) : undefined)}
+                        />
+                    </div>
+
+                    <label className="search-filter-checkbox">
+                        <input
+                            type="checkbox"
+                            checked={!!filters.delivery}
+                            onChange={e => updateFilter('delivery', e.target.checked || undefined)}
+                        />
+                        С доставкой
+                    </label>
+
+                    <button type="submit" className="search-filter-btn">
+                        🔍 Найти
+                    </button>
+                </form>
+            </section>
+
+            <section className="search-results">
+                {loading ? (
+                    <div className="main-loading">
+                        <div className="spinner"></div>
+                        <p>Поиск...</p>
+                    </div>
+                ) : (
+                    <>
+                        {searched && (
+                            <p className="search-count">
+                                Найдено: <span>{items.length}</span> {items.length === 1 ? 'товар' : items.length < 5 ? 'товара' : 'товаров'}
+                            </p>
+                        )}
+
+                        {items.length > 0 ? (
+                            <div className="search-grid">
+                                {items.map(item => (
+                                    <EquipmentCard key={item.id} equipment={item} />
+                                ))}
+                            </div>
+                        ) : searched ? (
+                            <div className="search-empty">
+                                <h3>Ничего не найдено</h3>
+                                <p>Попробуйте изменить параметры поиска</p>
+                            </div>
+                        ) : null}
+                    </>
+                )}
+            </section>
         </div>
     );
 }

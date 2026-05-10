@@ -1,0 +1,185 @@
+/* LoginPage.css - Background Image Theme */
+
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* ↓↓↓ ВСТАВЬТЕ СВОЁ ИЗОБРАЖЕНИЕ ЗДЕСЬ ↓↓↓ */
+    /* ВАРИАНТ 1: Если картинка в папке public (например, public/background.jpg) */
+    /* background-image: url('/background.jpg'); */
+    
+    /* ВАРИАНТ 2: Если картинка в папке src/assets (например, src/assets/background.jpg) */
+    background-image: url('../assets/Desktop_-_1.jpg');
+    
+    /* ВАРИАНТ 3: Если картинка из интернета */
+    /* background-image: url('https://images.unsplash.com/photo-1501281668745-f7f57925c3b4'); */
+    
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    padding: 20px;
+}
+
+/* Убираем затемнение, если оно мешает */
+/* .auth-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+} */
+
+.auth-box {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 35px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.auth-box:hover {
+    transform: translateY(-5px);
+}
+
+.auth-logo {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 20px;
+}
+
+.auth-box h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+}
+
+.auth-field {
+    margin-bottom: 20px;
+}
+
+.auth-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.auth-field input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.auth-field input:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.auth-field input::placeholder {
+    color: #bbb;
+}
+
+.auth-error {
+    background-color: #fee;
+    color: #dc2626;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    border-left: 4px solid #dc2626;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.auth-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4);
+}
+
+.auth-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.auth-link {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    color: #666;
+}
+
+.auth-link a {
+    color: #dc2626;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-link a:hover {
+    text-decoration: underline;
+}
+
+.auth-back {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    color: #dc2626;
+    border: 2px solid #dc2626;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.auth-back:hover {
+    background: #dc2626;
+    color: white;
+}
+
+@media (max-width: 480px) {
+    .auth-box {
+        padding: 30px 25px;
+        max-width: 90%;
+    }
+    
+    .auth-logo {
+        font-size: 2rem;
+    }
+    
+    .auth-box h2 {
+        font-size: 1.5rem;
+    }
+}

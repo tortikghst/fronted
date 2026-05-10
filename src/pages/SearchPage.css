@@ -1,87 +1,202 @@
-/* Стилизация select, чтобы был как input */
-.form-input {
-    width: 300px;
-    padding: 6px 8px;
-    box-sizing: border-box;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-    background-color: white;
-}
-
-/* Для select можно убрать стандартную стрелку (опционально) */
-select.form-input {
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    background-size: 1.2em;
-    cursor: pointer;
-}
-
-/* Основной контейнер – всё прижато к левому краю */
+/* src/pages/SearchPage.css */
 .search-page {
-    padding: 2rem;
-    text-align: left;
+    min-height: 100vh;
+    background: #f8f9fa;
 }
 
-/* Форма */
-.search-form {
-    max-width: 100%;
+/* Шапка */
+.search-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
 
-/* Группа: метка + поле ввода */
-.form-group {
-    margin-bottom: 16px;
+.search-header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
-/* Стиль метки (текст над полем) */
-.form-label {
-    display: block;
-    margin-bottom: 4px;
-    font-weight: 500;
-}
-
-/* Все поля ввода (текстовые, числовые) – одинаковый размер */
-.form-input {
-    width: 300px;
-    padding: 6px 8px;
-    box-sizing: border-box;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-}
-
-/* Группа для чекбокса – отступ и выравнивание */
-.checkbox-group {
-    margin-bottom: 20px;
-}
-
-.checkbox-label {
+.search-back-btn {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 10px 20px;
+    background: #8e8e8e;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+    .search-back-btn:hover {
+        background: #e0e0e0;
+    }
+
+.search-logo {
+    font-size: 28px;
+    font-weight: 900;
+    color: #ec5748;
+    margin: 0;
+}
+
+.search-profile-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #ec5748;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ec5748;
+    transition: all 0.3s;
+}
+
+    .search-profile-btn:hover {
+        background: #ec5748;
+        color: white;
+    }
+
+/* Фильтры */
+.search-filters {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.search-filters-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: end;
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.search-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 180px;
+}
+
+    .search-filter-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .search-filter-group input,
+    .search-filter-group select {
+        padding: 12px 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        font-size: 15px;
+        font-family: inherit;
+        transition: border-color 0.3s;
+    }
+
+        .search-filter-group input:focus,
+        .search-filter-group select:focus {
+            outline: none;
+            border-color: #ec5748;
+        }
+
+.search-filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0;
     cursor: pointer;
 }
 
-/* Кнопки – единое оформление (схематичное) */
-.submit-button,
-.next-button {
-    background-color: #007bff;
+    .search-filter-checkbox input {
+        width: 20px;
+        height: 20px;
+        accent-color: #ec5748;
+    }
+
+.search-filter-btn {
+    padding: 14px 32px;
+    background: linear-gradient(135deg, #ec5748 0%, #d94a3d 100%);
     color: white;
     border: none;
-    padding: 6px 16px;
-    border-radius: 4px;
-    font-size: 1rem;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
-    margin-top: 4px;
+    transition: all 0.3s;
+    height: fit-content;
 }
 
-.submit-button:hover,
-.next-button:hover {
-    background-color: #0056b3;
+    .search-filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(236, 87, 72, 0.4);
+    }
+
+/* Результаты */
+.search-results {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
 }
 
-.next-button-wrapper {
-    margin-top: 1.5rem;
+.search-count {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 24px;
+}
+
+    .search-count span {
+        font-weight: 700;
+        color: #333;
+    }
+
+.search-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+/* Пусто */
+.search-empty {
+    text-align: center;
+    padding: 100px 20px;
+}
+
+    .search-empty h3 {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 12px;
+    }
+
+    .search-empty p {
+        color: #888;
+        font-size: 16px;
+    }
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .search-header {
+        padding: 15px 20px;
+    }
+
+    .search-filters-form {
+        flex-direction: column;
+    }
+
+    .search-filter-group {
+        min-width: 100%;
+    }
 }

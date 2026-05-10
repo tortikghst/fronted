@@ -1,215 +1,162 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿// src/pages/ProfilePage.tsx
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { ordersApi } from '../api/ordersApi';
+import type { Order } from '../api/types';
+import './ProfilePage.css';
 
-interface User {
-    name: string;
-    email: string;
-}
-
-interface Order {
-    id: number | string;
-    eventType?: string;
-    eventDate?: string;
-    eventCity?: string;
-    budget?: number;
-    status?: string;
-}
-
-interface Favorite {
-    id: number | string;
-    name?: string;
-    supplier?: string;
-    price?: number;
-}
-
-const App: React.FC = () => {
-    const [ordersVisible, setOrdersVisible] = useState<boolean>(false);
-    const [favoritesVisible, setFavoritesVisible] = useState<boolean>(false);
+export default function ProfilePage() {
+    const navigate = useNavigate();
+    const { user, logout } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
-    const [favorites, setFavorites] = useState<Favorite[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
-    const [user, setUser] = useState<User>({ name: 'Загрузка...', email: 'Загрузка...' });
+    const [activeTab, setActiveTab] = useState<'info' | 'orders'>('info');
+    const [loading, setLoading] = useState(true);
 
-    const API_URL = 'http://91.107.123.64:3000/api';
+    const loadOrders = useCallback(async () => {
+        try {
+            const data = await ordersApi.getMyOrders();
+            setOrders(data);
+        } catch (err) {
+            console.error('Ошибка загрузки заказов:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
-    // Загрузка профиля при монтировании (с защитой от утечек памяти)
     useEffect(() => {
-        let isMounted = true;
-
-        const fetchUserProfile = async () => {
-            try {
-                const response = await fetch(`${API_URL}/user/profile`);
-                if (!response.ok) throw new Error('Ошибка загрузки профиля');
-                const data = await response.json();
-                if (isMounted) {
-                    setUser({
-                        name: data.name || data.fullName || data.username || 'Пользователь',
-                        email: data.email || 'email@example.com'
-                    });
-                }
-            } catch (err) {
-                console.error('Ошибка загрузки пользователя:', err);
-                if (isMounted) {
-                    // Демо-данные, если сервер не отвечает
-                    setUser({ name: 'Иван Иванович', email: 'ivan@event.ru' });
-                }
-            }
-        };
-
-        fetchUserProfile();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [API_URL]);
-
-    // Загрузка заказов
-    const loadOrders = async (): Promise<void> => {
-        setLoading(true);
-        try {
-            const response = await fetch(`${API_URL}/orders`);
-            if (!response.ok) throw new Error('Ошибка загрузки заказов');
-            const data = await response.json();
-            setOrders(data as Order[]);
-            setError(null);
-        } catch (err) {
-            setError((err as Error).message);
-            console.log('Ошибка:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Загрузка избранного
-    const loadFavorites = async (): Promise<void> => {
-        setLoading(true);
-        try {
-            const response = await fetch(`${API_URL}/favorites`);
-            if (!response.ok) throw new Error('Ошибка загрузки избранного');
-            const data = await response.json();
-            setFavorites(data as Favorite[]);
-            setError(null);
-        } catch (err) {
-            setError((err as Error).message);
-            console.log('Ошибка:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const showOrders = (): void => {
-        setOrdersVisible(true);
-        setFavoritesVisible(false);
         loadOrders();
+    }, [loadOrders]);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/start');
     };
 
-    const hideOrders = (): void => {
-        setOrdersVisible(false);
-    };
-
-    const showFavorites = (): void => {
-        setFavoritesVisible(true);
-        setOrdersVisible(false);
-        loadFavorites();
-    };
-
-    const hideFavorites = (): void => {
-        setFavoritesVisible(false);
-    };
-
-    const getStatusText = (status?: string): string => {
-        switch (status) {
-            case 'CREATED':
-                return '📋 Создан';
-            case 'CONFIRMED':
-                return '✅ Подтверждён';
-            case 'COMPLETED':
-                return '✔️ Выполнен';
-            case 'CANCELLED':
-                return '❌ Отменён';
-            default:
-                return '⚪ ' + (status || 'Неизвестно');
-        }
+    const getStatusLabel = (status: string) => {
+        const labels: Record<string, { text: string; class: string }> = {
+            PENDING: { text: '⏳ Ожидает', class: 'status-pending' },
+            CONFIRMED: { text: '✅ Подтверждён', class: 'status-confirmed' },
+            CANCELLED: { text: '❌ Отменён', class: 'status-cancelled' },
+            COMPLETED: { text: '🎉 Завершён', class: 'status-completed' },
+        };
+        return labels[status] || { text: status, class: '' };
     };
 
     return (
-        <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-            <h1>ЛИЧНЫЙ КАБИНЕТ</h1>
+        <div className="profile-page">
+            <header className="profile-header">
+                <button className="profile-back-btn" onClick={() => navigate(-1)}>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                    Назад
+                </button>
+                <h1 className="profile-logo">GostEvent</h1>
+                <button className="profile-logout-btn" onClick={handleLogout}>
+                    Выйти
+                </button>
+            </header>
 
-            <p><strong>{user.name}</strong></p>
-            <p>{user.email}</p>
-
-            <hr />
-
-            {/* МОИ ЗАКАЗЫ */}
-            <div>
-                <h3>📦 МОИ ЗАКАЗЫ</h3>
-
-                {!ordersVisible ? (
-                    <button onClick={showOrders}>Показать заказы</button>
-                ) : (
-                    <button onClick={hideOrders}>Скрыть заказы</button>
-                )}
-
-                {loading && <p>Загрузка...</p>}
-                {error && <p style={{ color: 'red' }}>Ошибка: {error}</p>}
-
-                {ordersVisible && (
-                    <div style={{ marginTop: '15px', marginLeft: '20px' }}>
-                        {orders.length === 0 && !loading ? (
-                            <p>Нет заказов</p>
-                        ) : (
-                            orders.map(order => (
-                                <div key={order.id} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px', borderRadius: '5px' }}>
-                                    <p><strong>{order.eventType || 'Мероприятие'}</strong></p>
-                                    <p>{order.eventDate || 'Дата не указана'} • {order.eventCity || 'Город не указан'}</p>
-                                    <p>Бюджет: {order.budget ? order.budget + ' руб' : 'Не указан'}</p>
-                                    <p>Статус: {getStatusText(order.status)}</p>
-                                </div>
-                            ))
-                        )}
+            <div className="profile-content">
+                <div className="profile-sidebar">
+                    <div className="profile-avatar">
+                        {user?.name?.[0]?.toUpperCase() || '👤'}
                     </div>
-                )}
-            </div>
+                    <h2 className="profile-name">{user?.name}</h2>
+                    <p className="profile-email">{user?.email}</p>
+                    <span className={`profile-role role-${user?.role?.toLowerCase()}`}>
+                        {user?.role}
+                    </span>
 
-            <hr />
-
-            {/* ИЗБРАННОЕ */}
-            <div>
-                <h3>⭐ ИЗБРАННОЕ</h3>
-
-                {!favoritesVisible ? (
-                    <button onClick={showFavorites}>Показать избранное</button>
-                ) : (
-                    <button onClick={hideFavorites}>Скрыть избранное</button>
-                )}
-
-                {loading && <p>Загрузка...</p>}
-
-                {favoritesVisible && (
-                    <div style={{ marginTop: '15px', marginLeft: '20px' }}>
-                        {favorites.length === 0 && !loading ? (
-                            <p>Нет избранного оборудования</p>
-                        ) : (
-                            favorites.map(item => (
-                                <div key={item.id} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px', borderRadius: '5px' }}>
-                                    <p><strong>{item.name || 'Оборудование'}</strong></p>
-                                    <p>Поставщик: {item.supplier || 'Не указан'}</p>
-                                    <p>Цена: {item.price ? item.price + ' руб/сут' : 'Не указана'}</p>
-                                </div>
-                            ))
-                        )}
+                    <div className="profile-tabs">
+                        <button
+                            className={activeTab === 'info' ? 'active' : ''}
+                            onClick={() => setActiveTab('info')}
+                        >
+                            Профиль
+                        </button>
+                        <button
+                            className={activeTab === 'orders' ? 'active' : ''}
+                            onClick={() => setActiveTab('orders')}
+                        >
+                            Мои заказы ({orders.length})
+                        </button>
                     </div>
-                )}
-            </div>
+                </div>
 
-            <hr />
-
-            <div>
-                <button>🚪 Выйти из аккаунта</button>
+                <div className="profile-main">
+                    {activeTab === 'info' ? (
+                        <div className="profile-info">
+                            <h3>Личная информация</h3>
+                            <div className="profile-field">
+                                <label>Имя</label>
+                                <p>{user?.name}</p>
+                            </div>
+                            <div className="profile-field">
+                                <label>Email</label>
+                                <p>{user?.email}</p>
+                            </div>
+                            <div className="profile-field">
+                                <label>Роль</label>
+                                <p>{user?.role}</p>
+                            </div>
+                            <div className="profile-field">
+                                <label>ID</label>
+                                <p className="profile-id">{user?.id}</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="profile-orders">
+                            <h3>История заказов</h3>
+                            {loading ? (
+                                <div className="profile-loading">Загрузка...</div>
+                            ) : orders.length === 0 ? (
+                                <div className="profile-empty">
+                                    <p>У вас пока нет заказов</p>
+                                    <button onClick={() => navigate('/search')}>
+                                        Найти оборудование
+                                    </button>
+                                </div>
+                            ) : (
+                                orders.map(order => {
+                                    const status = getStatusLabel(order.status);
+                                    return (
+                                        <div key={order.id} className="profile-order-card">
+                                            <div className="profile-order-header">
+                                                <span className="profile-order-id">
+                                                    Заказ #{order.id.slice(-6).toUpperCase()}
+                                                </span>
+                                                <span className={`profile-order-status ${status.class}`}>
+                                                    {status.text}
+                                                </span>
+                                            </div>
+                                            <p className="profile-order-event">
+                                                {order.eventType} — {order.eventCity}
+                                            </p>
+                                            <div className="profile-order-items">
+                                                {order.items.map((item, i) => (
+                                                    <span key={i} className="profile-order-item">
+                                                        {item.equipment.name} ×{item.quantity}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <div className="profile-order-footer">
+                                                <span className="profile-order-total">
+                                                    {order.totalPrice.toLocaleString('ru-RU')} ₽
+                                                </span>
+                                                <span className="profile-order-date">
+                                                    {new Date(order.createdAt).toLocaleDateString('ru-RU')}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
-};
-
-export default App;
+}
